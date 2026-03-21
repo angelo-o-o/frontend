@@ -1,24 +1,90 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
+
+  // Base URL
+  const api = axios.create({
+    baseURL: "http://localhost:5001",
+  });
+
+  // Fetch users
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/tblusers");
+      setUsers(res.data);
+    } catch (err) {
+      console.error("Fetch users failed:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Add or Update user
+  const handleSubmit = async () => {
+    if (!name || !email) return alert("Enter name and email");
+
+    try {
+      if (editingUserId) {
+        // UPDATE user
+        await api.put(`/tblusers/${editingUserId}`, { name, email });
+        setEditingUserId(null);
+      } else {
+        // ADD user
+        await api.post("/tblusers", { name, email });
+      }
+
+      setName("");
+      setEmail("");
+      fetchUsers();
+    } catch (err) {
+      console.error("Save user failed:", err.message);
+    }
+  };
+
+  // Delete user
+  const deleteUser = async (id) => {
+    try {
+      await api.delete(`/tblusers/${id}`);
+      fetchUsers();
+    } catch (err) {
+      console.error("Delete user failed:", err.message);
+    }
+  };
+
+  // Start editing a user
+  const startEdit = (user) => {
+    setName(user.name);
+    setEmail(user.email);
+    setEditingUserId(user.id);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppRoutes
+      usersPageProps={{
+        name,
+        email,
+        setName,
+        setEmail,
+        handleSubmit,
+        users,
+        loading,
+        deleteUser,
+        startEdit,
+        isEditing: !!editingUserId,
+      }}
+    />
   );
 }
 
