@@ -9,14 +9,14 @@ function Navbar() {
   return (
     <Box display="flex" justifyContent="center" mt={2}>
       <AppBar
-        color="secondary"
+        color="primary"
         position="static"
         sx={{ width: "80%", borderRadius: 2 }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Box display="flex" gap={2}>
             <Button color="inherit" component={Link} to="/">
-              Home
+              Homes
             </Button>
 
             <Button color="inherit" component={Link} to="/users">
